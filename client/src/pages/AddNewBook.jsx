@@ -1,59 +1,65 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "../components/FormProvider";
+import { useEffect, useState } from "react";
+
 export default function AddNewBook() {
-  const [bookTitle, setBookTitle] = useState("");
-  const [bookDescription, setBookDescription] = useState("");
-  const [bookPrice, setBookPrice] = useState("");
-  const [authorName, setAuthorName] = useState("");
+  const {
+    bookTitle,
+    setBookTitle,
+    bookDescription,
+    setBookDescription,
+    bookPrice,
+    setBookPrice,
+    authorName,
+    setAuthorName,
+  } = useForm();
+  const [imgUrl, setImgUrl] = useState("");
+
   async function handleSubmit(e) {
+    e.preventDefault();
+    // setBookTitle("");
+    // setBookDescription("");
+    // setBookPrice("");
+    // setAuthorName("");
+
     try {
-      e.preventDefault();
       const res = await fetch("http://localhost:3001/books", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          img: imgUrl,
           title: bookTitle,
           description: bookDescription,
           price: bookPrice,
           author: authorName,
         }),
       });
-      const data = await res.json();
-      console.log(data);
+
+      // const data = await res.json();
+      // console.log(data);
     } catch (err) {
       console.log(err.message);
     }
-    // try {
-    //   e.preventDefault();
-    //   alert("sucessfully submited");
-
-    //   //
-
-    //   const res = await fetch("http://localhost:3001/books", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       title: bookTitle,
-    //       description: bookDescription,
-    //       price: bookPrice,
-    //       author: authorName,
-    //     }),
-    //   });
-
-    //   // console.log({
-    //   //   title: bookTitle,
-    //   //   description: bookDescription,
-    //   //   price: bookPrice,
-    //   //   author: authorName,
-    //   // });
-    //   setBookTitle("");
-    //   setBookDescription("");
-    //   setBookPrice("");
-    //   setAuthorName("");
-    // } catch (err) {
-    //   console.log(err.message);
-    // }
   }
+
+  useEffect(() => {
+    async function getBookCover() {
+      try {
+        const res = await fetch(
+          `https://bookcover.longitood.com/bookcover?book_title=${bookTitle}&author_name=${authorName}`
+        );
+        const data = await res.json();
+        console.log(data.url);
+        setImgUrl(data.url);
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+    if (bookTitle && authorName) {
+      getBookCover();
+    }
+  }, [bookTitle, authorName]);
+
   return (
     <>
       <main>
@@ -68,7 +74,7 @@ export default function AddNewBook() {
           <textarea
             name=""
             id=""
-            placeholder=" Book description"
+            placeholder=" Comment/Description"
             value={bookDescription}
             onChange={(e) => setBookDescription(e.target.value)}
           />
